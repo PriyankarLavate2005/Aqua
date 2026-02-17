@@ -29,4 +29,28 @@ const sendWelcomeEmail = async (email, name) => {
     }
 };
 
-module.exports = { sendWelcomeEmail };
+const sendOTPEmail = async (email, otp) => {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        },
+    });
+
+    const mailOptions = {
+        from: `"Aqua AgriLink Team" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: 'Your Password Reset OTP - Aqua AgriLink 🌱',
+        text: `Your OTP for password reset is: ${otp}. This OTP is valid for 10 minutes.`,
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('OTP Email sent successfully');
+    } catch (error) {
+        console.error('OTP Email sending failed:', error);
+    }
+};
+
+module.exports = { sendWelcomeEmail, sendOTPEmail };

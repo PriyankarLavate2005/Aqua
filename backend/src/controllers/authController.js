@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
-const { sendWelcomeEmail } = require('../utils/sendEmail');
+const { sendWelcomeEmail, sendOTPEmail } = require('../utils/sendEmail');
 
 // Generate JWT
 const generateToken = (id) => {
@@ -75,7 +75,61 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc    Forgot password - send OTP
+const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.resetPasswordOTP = otp;
+    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    await user.save();
+
+    await sendOTPEmail(user.email, otp);
+
+    res.status(200).json({ message: 'OTP sent to email' });
+});
+
+// @desc    Verify OTP and log in
+const verifyOTP = asyncHandler(async (req, res) => {
+    const { email, otp } = req.body;
+
+    const user = await User.findOne({
+        email,
+        resetPasswordOTP: otp,
+        resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+        res.status(400);
+        throw new Error('Invalid or expired OTP');
+    }
+
+    // Clear OTP
+    user.resetPasswordOTP = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.status(200).json({
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        token: generateToken(user._id),
+        message: 'OTP verified, login successful',
+    });
+});
+
 module.exports = {
     registerUser,
     loginUser,
+    forgotPassword,
+    verifyOTP,
 };

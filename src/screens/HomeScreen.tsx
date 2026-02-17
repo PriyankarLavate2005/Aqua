@@ -14,6 +14,9 @@ import {
 import AppHeader from '../components/AppHeader';
 import translations from '../utils/translations';
 
+import NotificationScreen from './NotificationScreen';
+import WeatherScreen from './WeatherScreen';
+
 const { width } = Dimensions.get('window');
 
 const HomeScreen = ({ user, onLogout, language = 'en' }: any) => {
@@ -42,6 +45,7 @@ const HomeScreen = ({ user, onLogout, language = 'en' }: any) => {
                 userName={user?.name || 'Farmer'}
                 avatarText={user?.name?.charAt(0) || 'A'}
                 onProfilePress={() => setActiveTab('profile')}
+                onNotificationPress={() => setActiveTab('notifications')}
             />
 
             {/* Banner */}
@@ -80,7 +84,13 @@ const HomeScreen = ({ user, onLogout, language = 'en' }: any) => {
             <Text style={styles.sectionTitle}>{t.quickActions}</Text>
             <View style={styles.actionsContainer}>
                 {quickActions.map((action) => (
-                    <TouchableOpacity key={action.id} style={styles.actionButton}>
+                    <TouchableOpacity
+                        key={action.id}
+                        style={styles.actionButton}
+                        onPress={() => {
+                            if (action.id === 4) setActiveTab('weather');
+                        }}
+                    >
                         <View style={styles.actionCircle}>
                             <Text style={styles.actionIcon}>{action.icon}</Text>
                         </View>
@@ -106,7 +116,11 @@ const HomeScreen = ({ user, onLogout, language = 'en' }: any) => {
 
     const renderTemperature = () => (
         <View style={styles.placeholderContainer}>
-            <AppHeader title={t.analytics} showAvatar={false} />
+            <AppHeader
+                title={t.analytics}
+                showAvatar={false}
+                onNotificationPress={() => setActiveTab('notifications')}
+            />
             <View style={styles.centerContent}>
                 <Text style={styles.placeholderIcon}>🌡️</Text>
                 <Text style={styles.placeholderTitle}>{t.analytics}</Text>
@@ -117,7 +131,11 @@ const HomeScreen = ({ user, onLogout, language = 'en' }: any) => {
 
     const renderMarket = () => (
         <View style={styles.placeholderContainer}>
-            <AppHeader title={t.market} showAvatar={false} />
+            <AppHeader
+                title={t.market}
+                showAvatar={false}
+                onNotificationPress={() => setActiveTab('notifications')}
+            />
             <View style={styles.centerContent}>
                 <Text style={styles.placeholderIcon}>📈</Text>
                 <Text style={styles.placeholderTitle}>{t.market}</Text>
@@ -163,6 +181,8 @@ const HomeScreen = ({ user, onLogout, language = 'en' }: any) => {
             case 'temp': return renderTemperature();
             case 'market': return renderMarket();
             case 'profile': return renderProfile();
+            case 'notifications': return <NotificationScreen onBack={() => setActiveTab('home')} language={language} />;
+            case 'weather': return <WeatherScreen onBack={() => setActiveTab('home')} user={user} language={language} />;
             default: return renderHome();
         }
     };
@@ -181,26 +201,28 @@ const HomeScreen = ({ user, onLogout, language = 'en' }: any) => {
             {renderContent()}
 
             {/* Professional Bottom Tab Bar */}
-            <View style={styles.bottomTabBar}>
-                {tabs.map((tab) => (
-                    <TouchableOpacity
-                        key={tab.id}
-                        style={styles.tabItem}
-                        onPress={() => setActiveTab(tab.id)}
-                        activeOpacity={0.7}
-                    >
-                        <View style={styles.iconContainer}>
-                            <Text style={[styles.tabIcon, activeTab === tab.id && styles.activeTabIcon]}>
-                                {tab.icon}
+            {activeTab !== 'notifications' && (
+                <View style={styles.bottomTabBar}>
+                    {tabs.map((tab) => (
+                        <TouchableOpacity
+                            key={tab.id}
+                            style={styles.tabItem}
+                            onPress={() => setActiveTab(tab.id)}
+                            activeOpacity={0.7}
+                        >
+                            <View style={styles.iconContainer}>
+                                <Text style={[styles.tabIcon, activeTab === tab.id && styles.activeTabIcon]}>
+                                    {tab.icon}
+                                </Text>
+                                {activeTab === tab.id && <View style={styles.activeDot} />}
+                            </View>
+                            <Text style={[styles.tabLabel, activeTab === tab.id && styles.activeTabLabel]}>
+                                {tab.label}
                             </Text>
-                            {activeTab === tab.id && <View style={styles.activeDot} />}
-                        </View>
-                        <Text style={[styles.tabLabel, activeTab === tab.id && styles.activeTabLabel]}>
-                            {tab.label}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            )}
         </SafeAreaView>
     );
 };

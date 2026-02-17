@@ -11,7 +11,7 @@ import {
 import api from '../services/api';
 import translations from '../utils/translations';
 
-const LoginScreen = ({ onRegisterPress, onLoginSuccess, language = 'en' }: any) => {
+const LoginScreen = ({ onRegisterPress, onForgotPasswordPress, onLoginSuccess, language = 'en' }: any) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -56,6 +56,10 @@ const LoginScreen = ({ onRegisterPress, onLoginSuccess, language = 'en' }: any) 
                 onChangeText={setPassword}
                 secureTextEntry
             />
+
+            <TouchableOpacity onPress={onForgotPasswordPress}>
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
                 {loading ? (
@@ -120,6 +124,12 @@ const styles = StyleSheet.create({
     linkText: {
         color: '#00796B',
         fontWeight: 'bold',
+    },
+    forgotPasswordText: {
+        color: '#00796B',
+        textAlign: 'right',
+        marginBottom: 20,
+        fontWeight: '500',
     },
 });
 
